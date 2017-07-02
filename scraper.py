@@ -44,7 +44,7 @@ def scrape_area(area):
     :param area:
     :return: A list of results.
     """
-    cl_h = CraigslistHousing(site=settings.CRAIGSLIST_SITE, area=area, category=settings.CRAIGSLIST_HOUSING_SECTION,
+    cl_h = CraigslistHousing(site=settings.CRAIGSLIST_SITE, category=settings.CRAIGSLIST_HOUSING_SECTION,
                              filters={'max_price': settings.MAX_PRICE, "min_price": settings.MIN_PRICE})
 
     results = []

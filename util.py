@@ -61,11 +61,11 @@ def find_points_of_interest(geotag, location):
             area = a
             area_found = True
 
-    # Check to see if the listing is near any transit stations.
-    for station, coords in settings.TRANSIT_STATIONS.items():
+    # Check to see if the listing is near any crossfit gyms.
+    for gym, coords in settings.CROSSFIT_GYMS.items():
         dist = coord_distance(coords[0], coords[1], geotag[0], geotag[1])
         if (min_dist is None or dist < min_dist) and dist < settings.MAX_TRANSIT_DIST:
-            bart = station
+            bart = gym
             near_bart = True
 
         if (min_dist is None or dist < min_dist):
