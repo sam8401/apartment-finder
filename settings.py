@@ -47,7 +47,7 @@ NEIGHBORHOODS = ["plateau mont royal", "griffintown", "mile-end", "downtown", "o
 ## Transit preferences
 
 # The farthest you want to live from a transit stop.
-MAX_TRANSIT_DIST = 1 # kilometers
+MAX_TRANSIT_DIST = 3 # kilometers
 
 # Transit stations you want to check against.  Every coordinate here will be checked against each listing,
 # and the closest station name will be added to the result and posted into Slack.

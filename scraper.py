@@ -1,4 +1,7 @@
-from craigslist import CraigslistHousing
+#from craigslist import CraigslistHousing
+
+import pickle as p
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, Float, Boolean
@@ -38,74 +41,76 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-def scrape_area(area):
+def scrape_area():
     """
     Scrapes craigslist for a certain geographic area, and finds the latest listings.
     :param area:
     :return: A list of results.
     """
-    cl_h = CraigslistHousing(site=settings.CRAIGSLIST_SITE, category=settings.CRAIGSLIST_HOUSING_SECTION,
-                             filters={'max_price': settings.MAX_PRICE, "min_price": settings.MIN_PRICE})
+    #cl_h = CraigslistHousing(site=settings.CRAIGSLIST_SITE, category=settings.CRAIGSLIST_HOUSING_SECTION,
+                             #filters={'max_price': settings.MAX_PRICE, 'min_price': settings.MIN_PRICE, 'is_furnished' : 1})
+    #for result in cl_h.get_results(sort_by='newest', geotagged=True, limit=20)
 
-    results = []
-    gen = cl_h.get_results(sort_by='newest', geotagged=True, limit=20)
-    while True:
-        try:
-            result = next(gen)
-        except StopIteration:
-            break
-        except Exception:
+    results = [] 
+
+    saved_results = p.load(open('saved_furnished.p', 'rb'))
+    for result in saved_results:
+
+        # Don't store the listing if it already exists.    
+        #listing = session.query(Listing).filter_by(cl_id=result["id"]).first()
+
+        #if listing is None:
+        if result["where"] is None:
+            # If there is no string identifying which neighborhood the result is from, skip it.
             continue
-        listing = session.query(Listing).filter_by(cl_id=result["id"]).first()
 
-        # Don't store the listing if it already exists.
-        if listing is None:
-            if result["where"] is None:
-                # If there is no string identifying which neighborhood the result is from, skip it.
-                continue
+        lat = 0
+        lon = 0
 
-            lat = 0
-            lon = 0
-            if result["geotag"] is not None:
-                # Assign the coordinates.
-                lat = result["geotag"][0]
-                lon = result["geotag"][1]
+        if result["geotag"] is not None:
+            
+            print("Got result with geotag information!")
 
-                # Annotate the result with information about the area it's in and points of interest near it.
-                geo_data = find_points_of_interest(result["geotag"], result["where"])
-                result.update(geo_data)
-            else:
-                result["area"] = ""
-                result["bart"] = ""
+            # Assign the coordinates.
+            lat = result["geotag"][0]
+            lon = result["geotag"][1]
 
-            # Try parsing the price.
-            price = 0
-            try:
-                price = float(result["price"].replace("$", ""))
-            except Exception:
-                pass
+            # Annotate the result with information about the area it's in and points of interest near it.
+            geo_data = find_points_of_interest(result["geotag"], result["where"])
+            result.update(geo_data)
+        else:
+            result["area"] = ""
+            result["bart"] = ""
 
-            # Create the listing object.
-            listing = Listing(
-                link=result["url"],
-                created=parse(result["datetime"]),
-                lat=lat,
-                lon=lon,
-                name=result["name"],
-                price=price,
-                location=result["where"],
-                cl_id=result["id"],
-                area=result["area"],
-                bart_stop=result["bart"]
-            )
+        # Try parsing the price.
+        price = 0
+        try:
+            price = float(result["price"].replace("$", ""))
+        except Exception:
+            pass
 
-            # Save the listing so we don't grab it again.
-            session.add(listing)
-            session.commit()
+        # Create the listing object.
+        listing = Listing(
+            link=result["url"],
+            created=parse(result["datetime"]),
+            lat=lat,
+            lon=lon,
+            name=result["name"],
+            price=price,
+            location=result["where"],
+            cl_id=result["id"],
+            area=result["area"],
+            bart_stop=result["bart"]
+        )
 
-            # Return the result if it's near a bart station, or if it is in an area we defined.
-            if len(result["bart"]) > 0 or len(result["area"]) > 0:
-                results.append(result)
+        # Save the listing so we don't grab it again.
+        #session.add(listing)
+        #session.commit()
+
+        # Return the result if it's near a bart station, or if it is in an area we defined.
+        
+        #if len(result["bart"]) > 0 or len(result["area"]) > 0:
+        results.append(result)
 
     return results
 
@@ -117,10 +122,8 @@ def do_scrape():
     # Create a slack client.
     sc = SlackClient(settings.SLACK_TOKEN)
 
-    # Get all the results from craigslist.
-    all_results = []
-    for area in settings.AREAS:
-        all_results += scrape_area(area)
+    # Get all the results from craigslist. 
+    all_results = scrape_area()
 
     print("{}: Got {} results".format(time.ctime(), len(all_results)))
 
