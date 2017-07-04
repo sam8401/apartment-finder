@@ -18,36 +18,25 @@ CRAIGSLIST_SITE = 'montreal'
 # What Craigslist subdirectories to search on.
 # For instance, https://sfbay.craigslist.org/eby/ is the East Bay, and https://sfbay.craigslist.org/sfc/ is San Francisco.
 # You only need the last three letters of the URLs.
-AREAS = ["montreal"]
 
 # A list of neighborhoods and coordinates that you want to look for apartments in.  Any listing that has coordinates
 # attached will be checked to see which area it is in.  If there's a match, it will be annotated with the area
 # name.  If no match, the neighborhood field, which is a string, will be checked to see if it matches
 # anything in NEIGHBORHOODS.
 
-# TODO: Suman: fill this out!
-
-BOXES = {
-    # "adams_point": [
-    #     [37.80789, -122.25000],
-    #     [37.81589,	-122.26081],
-    # ],
-    # "piedmont": [
-    #     [37.82240, -122.24768],
-    #     [37.83237, -122.25386],
-    # ]
-}
-
 # A list of neighborhood names to look for in the Craigslist neighborhood name field. If a listing doesn't fall into
 # one of the boxes you defined, it will be checked to see if the neighborhood name it was listed under matches one
 # of these.  This is less accurate than the boxes, because it relies on the owner to set the right neighborhood,
 # but it also catches listings that don't have coordinates (many listings are missing this info).
-NEIGHBORHOODS = ["plateau mont royal", "griffintown", "mile-end", "downtown", "old montreal", "st-henri", "plateau", "westmount", "ville marie"]
+
+# other entries - "st-henri", "westmount"
+
+NEIGHBORHOODS = ["plateau mont royal", "griffintown", "mile-end", "downtown", "old montreal", "plateau", "outremont", "old port"]
 
 ## Transit preferences
 
 # The farthest you want to live from a transit stop.
-MAX_TRANSIT_DIST = 3 # kilometers
+MAX_TRANSIT_DIST = 1 # kilometers
 
 # Transit stations you want to check against.  Every coordinate here will be checked against each listing,
 # and the closest station name will be added to the result and posted into Slack.
@@ -70,7 +59,7 @@ CRAIGSLIST_HOUSING_SECTION = 'apa'
 # How long we should sleep between scrapes of Craigslist.
 # Too fast may get rate limited.
 # Too slow may miss listings.
-SLEEP_INTERVAL = 20 * 60 # 20 minutes
+SLEEP_INTERVAL = 60 * 60 # 20 minutes
 
 # Which slack channel to post the listings into.
 SLACK_CHANNEL = "#housingmtl"
